@@ -1,0 +1,46 @@
+<header>
+	<h1>@(last (explode-path category-path))</h1>
+</header>
+<section>
+	<header><h2>Subcategories</h2></header>
+	<ul>
+		@(for/list ([category (filter directory-exists? 
+								(filter-not hidden? (directory-list category-path #:build? #t)))])
+		@list{
+		<li>
+			<a href="@(relativize category-path category)">
+				@(last (explode-path category))
+			</a>
+		</li>
+		})
+	</ul>
+</section>
+<section>
+	<header><h2>Articles</h2></header>
+	<ul>
+		@(for/list ([page (filter markdown? 
+								(filter-not hidden? (directory-list category-path #:build? #t)))])
+		@list{
+		<li>
+			<a href="@(relativize category-path (remove-ext (normalize-path page)))">
+				@(remove-ext (last (explode-path page)))
+			</a>
+		</li>
+		})
+	</ul>
+</section>
+<section>
+	<header><h2>Categories</h2></header>
+	<ul>
+		@(if (path=? (src-dir) category-path) @list{}
+		@(for/list ([c (categories-of category-path)])
+		@list{
+		<li>
+			<a href="@(relativize category-path c)">
+				@(remove-ext (last (explode-path c)))
+			</a>
+		</li>
+		}))
+	</ul>
+</section>
+

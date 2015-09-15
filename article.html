@@ -1,0 +1,22 @@
+<article>
+	<header>
+		<h1>@|title|</h1>
+	</header>
+
+	@(map xexpr->string @content)
+
+	<footer>
+		<header><h2>Categories</h2></header>
+		<ul>
+			@(for/list ([c (categories-of article-path)])
+			@list{
+			<li>
+				<a href="@(find-relative-path (remove-ext article-path) c)">
+					@(remove-ext (last (explode-path c)))
+				</a>
+			</li>
+			})
+		</ul>
+	</footer>
+</article>
+
