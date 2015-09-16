@@ -1,98 +1,60 @@
 #lang racket
-(require sugar
+(require stiki/path-utils
+         stiki/parameters
+         sugar
          markdown
          web-server/templates
-         racket/cmdline
-         racket/path)
+         scribble/text
+         racket/path
+         "article.html"
+         "category.html")
 
-(define src-dir
-  (make-parameter (normalize-path (vector-ref (current-command-line-arguments) 0))))
-(define dst-dir
-  (make-parameter (normalize-path (vector-ref (current-command-line-arguments) 1))))
+(cond
+  [(= (vector-length (current-command-line-arguments)) 4) '()]
+  [else (begin
+          (displayln "Usage: racket -l stiki/main <src-dir> <dst-dir> <edit-url> <history-url>")
+          (exit))])
 
-; Path Utilities
-; Are two paths equal?
-(define (path=? a b)
-  (string=? (path->string a)
-            (path->string b)))
+(source-directory
+ (normalize-path (vector-ref (current-command-line-arguments) 0)))
 
-; Is a path a symlink?
-(define (symlink? path)
-  (not (path=? path (normalize-path path))))
+(destination-directory
+ (normalize-path (vector-ref (current-command-line-arguments) 1)))
 
-; Is a path a markdown file?
-(define (markdown? path)
-  (and (equal? (filename-extension path) #"md")
-       (file-exists? path)))
+(edit-url-pattern
+ (vector-ref (current-command-line-arguments) 2))
 
-(define (relativize src dst)
-  (if (path=? src dst) (build-path 'same)
-      (find-relative-path src dst)))
+(history-url-pattern
+ (vector-ref (current-command-line-arguments) 3))
 
-(define (hidden? path)
-  (not (andmap
-    (λ(p) (not (char=? (string-ref (path->string p) 0) #\.)))
-     (explode-path path))))
+(exclude-patterns
+ (map pregexp
+       (if (file-exists? (build-path (source-directory) ".stikiignore"))
+           (cons ".stikiignore"
+                 (file->lines (build-path (source-directory) ".stikiignore")))
+           '((".stikiignore")))))
 
-; List the categories a given path belongs to
-(define (categories-of path)
-  (list* (get-enclosing-dir path)
-         (map path-only
-              (filter (compose ((curry path=?) path) normalize-path)
-                      (filter link-exists?
-                              (filter-not hidden?
-                                          (sequence->list (in-directory (src-dir)))))))))
-
-; RENDERING
-
-(define (render-page
-         #:title page-title
-         #:content page-content)
-  (include-template "page.html"))
-
-; CATEGORY -> HTML
-(define (category->html category-path)
-  (render-page
-   #:title (last (explode-path category-path))
-   #:content (include-template "category.html")))
-
-; ARTICLE -> HTML
-(define (article->html article-path)
-  (render-page
-   #:title (remove-ext (file-name-from-path article-path))
-   #:content (let* ([title (remove-ext (file-name-from-path article-path))]
-                   [content
-                     (with-input-from-file article-path read-markdown)])
-               (include-template "article.html"))))
 
 ; IO
 (define (dtf v path)
   (make-directory* (path-only path))
-  (display-to-file v path))
-
-; Write Article HTML
-(define (pages)
-  (filter-not symlink?
-              (filter markdown?
-                      (filter-not hidden? (sequence->list(in-directory (src-dir)))))))
-
-
-(for ([path (pages)])
-  (dtf (article->html path)
-       (build-path (dst-dir)
-                   (find-relative-path (src-dir) (remove-ext path))
-                   "index.html")))
+  (with-output-to-file path (thunk (output v))))
 
 ; Write Category HTML
-(define (categories)
-  (cons (src-dir)
-  (filter directory-exists?
-          (filter-not hidden? (sequence->list (in-directory (src-dir)))))))
-
-(displayln (pages))
-
-(for ([path (categories)])
-  (dtf (category->html path)
-       (build-path (dst-dir)
-                   (relativize (src-dir) path)
+(for ([path (filter directory-exists? (lsr (source-directory)))])
+  (displayln path)
+  (dtf (render-category (path->title path) (normalize-path path))
+       (build-path (destination-directory)
+                   (relativize (source-directory) path)
                    "index.html")))
+
+; Write Article HTML
+(for ([path (filter-not symlink? (filter markdown? (lsr (source-directory))))])
+  (dtf (render-article
+        (path->title path)
+        (normalize-path path)
+        (with-input-from-file path read-markdown))
+       (build-path (destination-directory)
+                   (find-relative-path (source-directory) (remove-ext path))
+                   "index.html"))
+  (displayln path))

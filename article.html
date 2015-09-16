@@ -1,22 +1,44 @@
+#lang scribble/text
+
+@(require "page.html"
+          stiki/parameters
+          stiki/path-utils
+		  racket/port
+          sugar
+          racket/path
+          xml)
+
+@(provide (all-defined-out))
+
+
+@(define (render-article 
+	title 
+	path 
+	content)
+(render-page
+	@list{@(path->title (source-directory))}
+	path
+@list{
 <article>
-	<header>
+	<header id="page-title">
 		<h1>@|title|</h1>
+		<a id="edit-link" href="@(edit-url-pattern)@(remove-ext (relativize (source-directory) path)).md">Edit</a>
+		<a id="hist-link" href="@(history-url-pattern)@(remove-ext (relativize (source-directory) path)).md">History</a>
 	</header>
 
-	@(map xexpr->string @content)
+	@list{@(map xexpr->string @content)}
 
 	<footer>
 		<header><h2>Categories</h2></header>
 		<ul>
-			@(for/list ([c (categories-of article-path)])
+			@(for/list ([category (categories-of path)])
 			@list{
 			<li>
-				<a href="@(find-relative-path (remove-ext article-path) c)">
-					@(remove-ext (last (explode-path c)))
-				</a>
+				<a href="@(relativize (normalize-path path) (normalize-path category))">@(path->title category)</a>
 			</li>
+
 			})
 		</ul>
 	</footer>
 </article>
-
+}))

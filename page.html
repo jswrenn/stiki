@@ -1,15 +1,100 @@
+#lang scribble/text
+@(require stiki/parameters
+          stiki/path-utils
+          sugar)
+@(provide (all-defined-out))
+
+@(define (render-page title path content) 
+@list{
 <!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>@|page-title|</title>
+		<title>@|title|</title>
+		<link href='http://fonts.googleapis.com/css?family=IM+Fell+English:400,400italic' rel='stylesheet' type='text/css'>
+		<style>
+			html {
+				font-size: 20px;
+				background-color: hsl(57, 82%, 97%);
+			}
+
+			body {
+				display: flex;
+				flex-direction: column;
+				font-family: 'IM Fell English', serif;
+				font-weight: 400;
+				line-height: 1.45;
+				color: #333;
+			}
+
+
+			#site-title a {
+				color: black;
+				text-decoration: none;
+			}
+
+
+			p {margin-bottom: 1.3em;}
+
+			h1, h2, h3, h4 {
+				margin: 1.414em 0 0.5em;
+				font-weight: inherit;
+				line-height: 1.2;
+			}
+
+			h1 {
+				margin-top: 0;
+				font-size: 3.157em;
+			}
+
+			h2 {font-size: 2.369em;}
+			h3 {font-size: 1.777em;}
+			h4 {font-size: 1.333em;}
+			small, .font_small {font-size: 0.75em;}
+
+			main {
+				margin: 0 auto;
+				max-width: 50rem;
+				width: 100%;
+			}
+
+			#site-title {
+				font-style: italic;
+				text-align: center;
+			}
+
+			#page-title {
+				border-bottom: 1px black solid;
+			}
+
+			#page-title > h1 {
+				margin-bottom: 0;
+				display: inline-block;
+			}
+
+			#edit, #history {
+				float: right;
+				font-variant: small-caps;
+			}
+
+			.category-section > ul {
+				-webkit-column-width:15em;
+				-moz-column-width:15em;
+				column-width:15em;
+			}
+		</style>
 	</head>
 	<body>
-		<header>
-			The Stiki Wiki
+		<header id="site-title">
+			<h1>
+				<a href="@(relativize path (source-directory))">
+					@(path->title (source-directory))
+				</a>
+			</h1>
 		</header>
 		<main>
-			@list{@page-content}
+			@content
 		</main>
 	</body>
 </html>
+})

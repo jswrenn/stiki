@@ -1,46 +1,52 @@
+#lang scribble/text
+
+@(require "page.html"
+          sugar
+          racket/path
+          stiki/parameters
+          stiki/path-utils)
+
+@(provide (all-defined-out))
+
+@(define (render-category 
+	title 
+	path)
+@(render-page
+	title
+	path
+@list{
 <header>
-	<h1>@(last (explode-path category-path))</h1>
+	<h1 id="page-title">@|title|</h1>
 </header>
-<section>
+<section class="category-section">
 	<header><h2>Subcategories</h2></header>
 	<ul>
-		@(for/list ([category (filter directory-exists? 
-								(filter-not hidden? (directory-list category-path #:build? #t)))])
+		@(for/list ([category (filter directory-exists? (ls path))])
 		@list{
-		<li>
-			<a href="@(relativize category-path category)">
-				@(last (explode-path category))
-			</a>
-		</li>
+		<li><a href="@(relativize path category)">@(last (explode-path category))</a></li>
+
 		})
 	</ul>
 </section>
-<section>
+<section class="category-section">
 	<header><h2>Articles</h2></header>
 	<ul>
-		@(for/list ([page (filter markdown? 
-								(filter-not hidden? (directory-list category-path #:build? #t)))])
+		@(for/list ([page (ls path)])
 		@list{
-		<li>
-			<a href="@(relativize category-path (remove-ext (normalize-path page)))">
-				@(remove-ext (last (explode-path page)))
-			</a>
-		</li>
+		<li><a href="@(relativize path (remove-ext (normalize-path page)))">@(remove-ext (last (explode-path page)))</a></li>
+
 		})
 	</ul>
 </section>
-<section>
+<section class="category-section">
 	<header><h2>Categories</h2></header>
 	<ul>
-		@(if (path=? (src-dir) category-path) @list{}
-		@(for/list ([c (categories-of category-path)])
+		@(if (path=? (source-directory) path) @list{}
+		@(for/list ([c (categories-of path)])
 		@list{
-		<li>
-			<a href="@(relativize category-path c)">
-				@(remove-ext (last (explode-path c)))
-			</a>
-		</li>
+		<li><a href="@(relativize path c)">@(remove-ext (last (explode-path c)))</a></li>
+
 		}))
 	</ul>
 </section>
-
+}))
