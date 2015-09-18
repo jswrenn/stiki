@@ -11,6 +11,9 @@
 (define (without-trailing-slash path)
     (bytes->path (regexp-replace #rx#"/$" (path->bytes path) "")))
 
+(define (with-trailing-slash path)
+    (bytes->path (regexp-replace #rx#"/$" (path->bytes path) "")))
+
 (define (change-ext path ext)
   (add-ext (remove-ext path) ext))
 
@@ -87,7 +90,7 @@
 
 ; List the categories a given path belongs to
 (define (categories-of path)
-  (map without-trailing-slash
+  (map identity
        (list* (get-enclosing-dir path)
               (map path-only
                    (filter ((curryr symlink-to?) path)
@@ -107,7 +110,7 @@
 
 (define base
   (without-trailing-slash
-   (simple-form-path "../Encyclopedia Occulta/")))
+   (simple-form-path "../Encyclopedia Occulta")))
 
 (define sampdir
   (without-trailing-slash
