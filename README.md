@@ -28,7 +28,7 @@ raco pkg install https://github.com/jswrenn/markdown.git
 ```sh
 racket -l stiki/main [SOURCE-DIRECTORY] [DEST-DIRECTORY] [EDIT-URL-FRAGMENT] [HISTORY-URL-FRAGMENT]
 ```
-The EDIT-URL-FRAGMENT and HISTORY-URL-FRAGMENTS the partial links for your wiki's online git hosting's edit and history pages for a file.
+The EDIT-URL-FRAGMENT and HISTORY-URL-FRAGMENTS are the partial links for your wiki's online git hosting's edit and history pages for a file.
 
 Github's integrated editor for this readme is `https://github.com/jswrenn/markdown/blob/master/README.md`. 
 The fragment you would pass to Stiki would be `https://github.com/jswrenn/markdown/edit/master/`
