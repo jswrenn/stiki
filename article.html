@@ -34,7 +34,7 @@
 			@(for/list ([category (categories-of path)])
 			@list{
 			<li>
-				<a href="@(relativize (normalize-path path) (normalize-path category))">@(path->title category)</a>
+				<a href="@(relativize (path-only path) category)">@(path->title category)</a>
 			</li>
 
 			})

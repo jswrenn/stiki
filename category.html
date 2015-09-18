@@ -8,45 +8,46 @@
 
 @(provide (all-defined-out))
 
+
 @(define (render-category 
-	title 
-	path)
+  title 
+  path)
 @(render-page
-	title
-	path
+  title
+  path
 @list{
 <header>
-	<h1 id="page-title">@|title|</h1>
+  <h1 id="page-title">@|title|</h1>
 </header>
 <section class="category-section">
-	<header><h2>Subcategories</h2></header>
-	<ul>
-		@(for/list ([category (filter directory-exists? (ls path))])
-		@list{
-		<li><a href="@(relativize path category)">@(last (explode-path category))</a></li>
+  <header><h2>Subcategories</h2></header>
+  <ul>
+    @(for/list ([category (subcategories-of path)])
+    @list{
+    <li><a href="@(relativize path category)">@(last (explode-path category))</a></li>
 
-		})
-	</ul>
+    })
+  </ul>
 </section>
 <section class="category-section">
-	<header><h2>Articles</h2></header>
-	<ul>
-		@(for/list ([page (ls path)])
-		@list{
-		<li><a href="@(relativize path (remove-ext (normalize-path page)))">@(remove-ext (last (explode-path page)))</a></li>
+  <header><h2>Articles</h2></header>
+  <ul>
+    @(for/list ([page (sort (subarticles-of path) path<?)])
+    @list{
+    <li><a href="@(relativize path (normalize-path page))">@(remove-ext (last (explode-path page)))</a></li>
 
-		})
-	</ul>
+    })
+  </ul>
 </section>
 <section class="category-section">
-	<header><h2>Categories</h2></header>
-	<ul>
-		@(if (path=? (source-directory) path) @list{}
-		@(for/list ([c (categories-of path)])
-		@list{
-		<li><a href="@(relativize path c)">@(remove-ext (last (explode-path c)))</a></li>
+  <header><h2>Categories</h2></header>
+  <ul>
+    @(if (path=? (source-directory) path) @list{}
+    @(for/list ([c (categories-of path)])
+    @list{
+    <li><a href="@(relativize path c)">@(path->title c)</a></li>
 
-		}))
-	</ul>
+    }))
+  </ul>
 </section>
 }))

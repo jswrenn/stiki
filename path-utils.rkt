@@ -1,30 +1,31 @@
 #lang racket
 
 (require
+  racket/path
   stiki/parameters
   sugar)
 
 (provide
  (all-defined-out))
 
+(define (without-trailing-slash path)
+    (bytes->path (regexp-replace #rx#"/$" (path->bytes path) "")))
+
+(define (change-ext path ext)
+  (add-ext (remove-ext path) ext))
+
 (define (exclude-path? path)
   (for/and ([pattern (exclude-patterns)])
     (not (regexp-match pattern (path->string path)))))
 
-; A filtered listing of the directory's immediate children
-(define (ls path)
-  (filter exclude-path?
-          (directory-list path #:build? #t)))
-
-;  A filtered recursive listing of the directory's children
-(define (lsr path)
-  (filter exclude-path?
-          (map ((curry find-relative-path) path)
-               (sequence->list (in-directory path)))))
 
 ; Are two paths equal?
 (define (path=? a b)
   (string=? (path->string a)
+            (path->string b)))
+
+(define (path<? a b)
+  (string<? (path->string a)
             (path->string b)))
 
 (define (symlink? path)
@@ -37,11 +38,6 @@
        (= (file-or-directory-identity link #f)
           (file-or-directory-identity dest #f))))
 
-; Is a path a markdown file?
-(define (markdown? path)
-  (and (equal? (filename-extension path) #"md")
-       (file-exists? path)))
-
 ; Construct a relative path from a src and dst
 (define (relativize src dst)
   (if (path=? src dst) (build-path 'same)
@@ -51,19 +47,78 @@
 (define (path->title path)
   (remove-ext (last (explode-path path))))
 
+(define (find path args)
+ (map (compose without-trailing-slash string->path)
+       (string-split	 
+        (with-output-to-string
+         (λ () (system (string-join
+                        (list* "find \"" (path->string path) "\"" args) ""))))
+        "\n")))
+
+; Recursively list all links
+(define (lslr path)
+  (find path
+        '(" -type l -not -path \"*/\\.*\"")))
+
+(define (lsdr path)
+  (find path
+        '(" -type d -not -path \"*/\\.*\"")))
+  
+
+; Recursively list all markdown files
+(define (lsfr-md path)
+  (find path
+        '(" -type f ! -type l -path \"*.md\" -not -path \"*/\\.*\"")))
+
+; List Immediate Subfiles
+(define (lsf path)
+  (find path
+        '(" -maxdepth 1 -type f -not -path \"*/\\.*\"")))
+
+; List Immediate Sublinks
+(define (lsl path)
+  (find path
+        '(" -maxdepth 1 -type l -not -path \"*/\\.*\"")))
+
+; List Immediate Subdirectories
+(define (lsd path)
+  (find path
+        '(" -maxdepth 1 -type d -not -path \"*/\\.*\"")))
+
 ; List the categories a given path belongs to
 (define (categories-of path)
-  (list* (get-enclosing-dir path)
-         (map path-only
-              (filter ((curryr symlink-to?) path)
-                      (lsr (source-directory))))))
+  (map without-trailing-slash
+       (list* (get-enclosing-dir path)
+              (map path-only
+                   (filter ((curryr symlink-to?) path)
+                           (lslr (source-directory)))))))
 
-(define (fast-directory-list path)
-  (string-split	 
-   (with-output-to-string
-    (λ () (system
-           (string-join (list
-                         "find "
-                         (path->string path)
-                         " -not -path \"*/\\.*\"")))))
-   "\n"))
+(define (subarticles-of path)
+  (append (lsf path)
+          (filter (compose file-exists? normalize-path)
+                  (lsl path))))
+
+; Subcategories Of
+(define (subcategories-of path)
+  (filter-not ((curry path=?) path)
+              (append (lsd path)
+                      (filter (compose directory-exists? resolve-path)
+                              (lsl path)))))
+
+(define base
+  (without-trailing-slash
+   (simple-form-path "../Encyclopedia Occulta/")))
+
+(define sampdir
+  (without-trailing-slash
+   (simple-form-path "../Encyclopedia Occulta/categories/Buildings.md")))
+
+(define categories
+  (first (subcategories-of base)))
+
+(define periodicals
+  (first (subcategories-of categories)))
+
+(define sampfile
+  (without-trailing-slash
+   (simple-form-path "../Encyclopedia Occulta/articles/Adams House.md")))
