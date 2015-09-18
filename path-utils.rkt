@@ -107,21 +107,3 @@
               (append (lsd path)
                       (filter (compose directory-exists? resolve-path)
                               (lsl path)))))
-
-(define base
-  (without-trailing-slash
-   (simple-form-path "../Encyclopedia Occulta")))
-
-(define sampdir
-  (without-trailing-slash
-   (simple-form-path "../Encyclopedia Occulta/categories/Buildings.md")))
-
-(define categories
-  (first (subcategories-of base)))
-
-(define periodicals
-  (first (subcategories-of categories)))
-
-(define sampfile
-  (without-trailing-slash
-   (simple-form-path "../Encyclopedia Occulta/articles/Adams House.md")))
