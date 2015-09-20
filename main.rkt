@@ -84,7 +84,7 @@
 ; Write Category HTML
 (for ([path (lsdr (source-directory))])
   (dtf (render-category (path->title path)
-                        path)
+                        (build-path path "index.html"))
        (build-path (destination-directory)
                    (relativize (source-directory)
                                path)

@@ -22,9 +22,9 @@
 <section class="category-section">
   <header><h2>Subcategories</h2></header>
   <ul>
-    @(for/list ([category (subcategories-of path)])
+    @(for/list ([category (subcategories-of (path-only path))])
     @list{
-    <li><a href="@(relativize path category)">@(last (explode-path category))</a></li>
+    <li><a href="@(relativize (path-only path) category)">@(last (explode-path category))</a></li>
 
     })
   </ul>
@@ -32,9 +32,9 @@
 <section class="category-section">
   <header><h2>Articles</h2></header>
   <ul>
-    @(for/list ([page (sort (subarticles-of path) path<?)])
+    @(for/list ([page (sort (subarticles-of (path-only path)) path<?)])
     @list{
-    <li><a href="@(relativize path (normalize-path page))">@(remove-ext (last (explode-path page)))</a></li>
+    <li><a href="@(relativize (path-only path) (normalize-path page))">@(remove-ext (last (explode-path page)))</a></li>
 
     })
   </ul>
@@ -43,9 +43,9 @@
   <header><h2>Categories</h2></header>
   <ul>
     @(if (path=? (source-directory) path) @list{}
-    @(for/list ([c (categories-of path)])
+    @(for/list ([c (categories-of (path-only path))])
     @list{
-    <li><a href="@(relativize path c)">@(path->title c)</a></li>
+    <li><a href="@(relativize (path-only path) c)">@(path->title c)</a></li>
 
     }))
   </ul>

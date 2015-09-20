@@ -43,7 +43,8 @@
 
 ; Construct a relative path from a src and dst
 (define (relativize src dst)
-  (if (path=? src dst) (build-path 'same)
+  (if (path=? (without-trailing-slash (simple-form-path src))
+              (without-trailing-slash (simple-form-path dst))) (string->path ".")
       (find-relative-path src dst)))
 
 ; Title from path

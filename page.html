@@ -1,6 +1,7 @@
 #lang scribble/text
 @(require stiki/parameters
           stiki/path-utils
+          racket/path
           sugar)
 @(provide (all-defined-out))
 
@@ -87,7 +88,7 @@
 	<body>
 		<header id="site-title">
 			<h1>
-				<a href="@(relativize path (source-directory))">
+				<a href="@(relativize (path-only path) (source-directory))">
 					@(path->title (source-directory))
 				</a>
 			</h1>

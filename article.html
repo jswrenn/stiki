@@ -26,7 +26,7 @@
 		<a id="hist-link" href="@(history-url-pattern)@(remove-ext (relativize (source-directory) path)).md">History</a>
 	</header>
 
-	@list{@(map xexpr->string @content)}
+	@(disable-prefix @list{@(map xexpr->string @content)})
 
 	<footer>
 		<header><h2>Categories</h2></header>
